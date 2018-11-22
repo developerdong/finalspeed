@@ -6,45 +6,45 @@ import net.fs.rudp.StreamPipe.HttpHost;
 
 public class ConnInfo {
 
-	
-	String requestHost=null;
-	
-	String requestPath=null;
-	
-	boolean http=false;
-	
-	HttpHost host=null;
 
-	public String getRequestHost() {
-		return requestHost;
-	}
+    String requestHost = null;
 
-	public void setRequestHost(String requestHost) {
-		this.requestHost = requestHost;
-	}
+    String requestPath = null;
 
-	public String getRequestPath() {
-		return requestPath;
-	}
+    boolean http = false;
 
-	public void setRequestPath(String requestPath) {
-		this.requestPath = requestPath;
-	}
+    HttpHost host = null;
 
-	public boolean isHttp() {
-		return http;
-	}
+    public String getRequestHost() {
+        return requestHost;
+    }
 
-	public void setHttp(boolean http) {
-		this.http = http;
-	}
+    public void setRequestHost(String requestHost) {
+        this.requestHost = requestHost;
+    }
 
-	public HttpHost getHost() {
-		return host;
-	}
+    public String getRequestPath() {
+        return requestPath;
+    }
 
-	public void setHost(HttpHost host) {
-		this.host = host;
-	}
-	
+    public void setRequestPath(String requestPath) {
+        this.requestPath = requestPath;
+    }
+
+    public boolean isHttp() {
+        return http;
+    }
+
+    public void setHttp(boolean http) {
+        this.http = http;
+    }
+
+    public HttpHost getHost() {
+        return host;
+    }
+
+    public void setHost(HttpHost host) {
+        this.host = host;
+    }
+
 }

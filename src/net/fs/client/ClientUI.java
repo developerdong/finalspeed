@@ -2,148 +2,81 @@
 
 package net.fs.client;
 
-import java.awt.AWTException;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.Toolkit;
-import java.awt.TrayIcon;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
-
-import org.pcap4j.core.Pcaps;
-
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import net.fs.rudp.Route;
 import net.fs.utils.LogOutputStream;
 import net.fs.utils.MLog;
 import net.fs.utils.Tools;
 import net.miginfocom.swing.MigLayout;
+import org.pcap4j.core.Pcaps;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 public class ClientUI implements ClientUII, WindowListener {
 
-    JFrame mainFrame;
-
-    JComponent mainPanel;
-
-    JComboBox text_serverAddress;
-
-    MapClient mapClient;
-
-    JLabel uploadSpeedField, downloadSpeedField, stateText;
-
-    ClientConfig config = null;
-
-    String configFilePath = new File(URLDecoder.decode(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath(), "UTF-8")).getParent() + System.getProperty("file.separator") + "client_config.json";
-
-    String logoImg = "img/offline.png";
-
-    String offlineImg = "img/offline.png";
-
-    String name = "FinalSpeed";
-
-    private TrayIcon trayIcon;
-
-    private SystemTray tray;
-
-    String domain = "";
-
-    String homeUrl;
-
     public static ClientUI ui;
-
-    JTextField text_ds, text_us;
-
-    boolean ky = true;
-
-    String errorMsg = "保存失败请检查输入信息!";
-
-    JButton button_site;
-
-    MapRuleListModel model;
-
     public MapRuleListTable tcpMapRuleListTable;
-
+    public boolean osx_fw_pf = false;
+    public boolean osx_fw_ipfw = false;
+    public boolean isVisible = true;
+    JFrame mainFrame;
+    JComponent mainPanel;
+    JComboBox text_serverAddress;
+    MapClient mapClient;
+    JLabel uploadSpeedField, downloadSpeedField, stateText;
+    ClientConfig config = null;
+    String configFilePath = new File(URLDecoder.decode(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath(), "UTF-8")).getParent() + System.getProperty("file.separator") + "client_config.json";
+    String logoImg = "img/offline.png";
+    String offlineImg = "img/offline.png";
+    String name = "FinalSpeed";
+    String domain = "";
+    String homeUrl;
+    JTextField text_ds, text_us;
+    boolean ky = true;
+    String errorMsg = "保存失败请检查输入信息!";
+    JButton button_site;
+    MapRuleListModel model;
     boolean capSuccess = false;
     Exception capException = null;
     boolean b1 = false;
-
     boolean success_firewall_windows = true;
-
     boolean success_firewall_osx = true;
-
     String systemName = null;
-
-    public boolean osx_fw_pf = false;
-
-    public boolean osx_fw_ipfw = false;
-
-    public boolean isVisible = true;
-
     JRadioButton r_tcp, r_udp;
-    
-    boolean min=false;
-    
+    boolean min = false;
     LogFrame logFrame;
-    
     LogOutputStream los;
-    
-    boolean tcpEnable=true;
-    
+    boolean tcpEnable = true;
+    private TrayIcon trayIcon;
+    private SystemTray tray;
+
     {
         domain = "ip4a.com";
         homeUrl = "http://www.ip4a.com/?client_fs";
     }
 
-    ClientUI(final boolean isVisible,boolean min) throws UnsupportedEncodingException {
-    	this.min=min;
+    ClientUI(final boolean isVisible, boolean min) throws UnsupportedEncodingException {
+        this.min = min;
         setVisible(isVisible);
-        
-        if(isVisible){
-        	 los=new LogOutputStream(System.out);
-             System.setOut(los);
-             System.setErr(los);
+
+        if (isVisible) {
+            los = new LogOutputStream(System.out);
+            System.setOut(los);
+            System.setErr(los);
         }
-        
-        
+
+
         systemName = System.getProperty("os.name").toLowerCase();
         MLog.info("System: " + systemName + " " + System.getProperty("os.version"));
         ui = this;
@@ -270,47 +203,47 @@ public class ClientUI implements ClientUII, WindowListener {
         p1.add(text_serverAddress, "width 150::");
         text_serverAddress.setEditable(true);
         TextComponentPopupMenu.installToComponent(text_serverAddress);
-        
+
         ListCellRenderer renderer = new AddressCellRenderer();
         text_serverAddress.setRenderer(renderer);
         text_serverAddress.setEditable(true);
-        
+
         text_serverAddress.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				//System.out.println(text_serverAddress.getSelectedItem().toString());
-			}
-		});
-        
-        for(int n=0;n<config.getRecentAddressList().size();n++){
-        	text_serverAddress.addItem(config.getRecentAddressList().get(n));
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //System.out.println(text_serverAddress.getSelectedItem().toString());
+            }
+        });
+
+        for (int n = 0; n < config.getRecentAddressList().size(); n++) {
+            text_serverAddress.addItem(config.getRecentAddressList().get(n));
         }
-        
-        if(config.getRecentAddressList().size()==0){
-        	text_serverAddress.setSelectedItem("");
+
+        if (config.getRecentAddressList().size() == 0) {
+            text_serverAddress.setSelectedItem("");
         }
-        
-        JButton button_removeAddress=createButton("删除");
+
+        JButton button_removeAddress = createButton("删除");
         p1.add(button_removeAddress, "");
         button_removeAddress.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String address=text_serverAddress.getSelectedItem().toString();
-				if(!address.equals("")){
-					int result=JOptionPane.showConfirmDialog(mainFrame, "确定删除吗?","消息", JOptionPane.YES_NO_OPTION);
-					if(result==JOptionPane.OK_OPTION){
-						text_serverAddress.removeItem(address);
-						String selectText="";
-						if(text_serverAddress.getModel().getSize()>0){
-							selectText=text_serverAddress.getModel().getElementAt(0).toString();
-						}
-						text_serverAddress.setSelectedItem(selectText);
-					}
-				}
-			}
-		});
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String address = text_serverAddress.getSelectedItem().toString();
+                if (!address.equals("")) {
+                    int result = JOptionPane.showConfirmDialog(mainFrame, "确定删除吗?", "消息", JOptionPane.YES_NO_OPTION);
+                    if (result == JOptionPane.OK_OPTION) {
+                        text_serverAddress.removeItem(address);
+                        String selectText = "";
+                        if (text_serverAddress.getModel().getSize() > 0) {
+                            selectText = text_serverAddress.getModel().getElementAt(0).toString();
+                        }
+                        text_serverAddress.setSelectedItem(selectText);
+                    }
+                }
+            }
+        });
 
         JPanel panelr = new JPanel();
         pa.add(panelr, "wrap");
@@ -355,7 +288,7 @@ public class ClientUI implements ClientUII, WindowListener {
             }
         });
 
-        
+
         JPanel pa2 = new JPanel();
         sp.add(pa2, "wrap");
         pa2.setLayout(new MigLayout("insets 0 0 0 0"));
@@ -365,45 +298,45 @@ public class ClientUI implements ClientUII, WindowListener {
         pa2.add(text_us, "width 80::");
         text_us.setHorizontalAlignment(JTextField.RIGHT);
         text_us.setEditable(false);
-        
-        
+
+
         JPanel sp2 = new JPanel();
         sp2.setLayout(new MigLayout("insets 0 0 0 0"));
         loginPanel.add(sp2, "align center,  wrap");
-        
-        final JCheckBox cb=new JCheckBox("开机启动",config.isAutoStart());
+
+        final JCheckBox cb = new JCheckBox("开机启动", config.isAutoStart());
         sp2.add(cb, "align center");
-		cb.addActionListener(new ActionListener(){
+        cb.addActionListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				config.setAutoStart(cb.isSelected());
-				saveConfig();
-				setAutoRun(config.isAutoStart());
-			}
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                config.setAutoStart(cb.isSelected());
+                saveConfig();
+                setAutoRun(config.isAutoStart());
+            }
 
-		});
-		
-		JButton button_show_log=createButton("显示日志");
-		sp2.add(button_show_log,"wrap");
-		button_show_log.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(logFrame==null){
-					 logFrame=new LogFrame(ui);
-		             logFrame.setSize(700, 400);
-		             logFrame.setLocationRelativeTo(null);
-		             los.addListener(logFrame);
-		             
-		             if(los.getBuffer()!=null){
-		            	logFrame.showText(los.getBuffer().toString());
-		     			los.setBuffer(null);
-		             }
-				}
-				logFrame.setVisible(true);
-			}
-		});
+        });
+
+        JButton button_show_log = createButton("显示日志");
+        sp2.add(button_show_log, "wrap");
+        button_show_log.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (logFrame == null) {
+                    logFrame = new LogFrame(ui);
+                    logFrame.setSize(700, 400);
+                    logFrame.setLocationRelativeTo(null);
+                    los.addListener(logFrame);
+
+                    if (los.getBuffer() != null) {
+                        logFrame.showText(los.getBuffer().toString());
+                        los.setBuffer(null);
+                    }
+                }
+                logFrame.setVisible(true);
+            }
+        });
 
         JPanel p4 = new JPanel();
         p4.setLayout(new MigLayout("insets 5 0 0 0 "));
@@ -441,12 +374,11 @@ public class ClientUI implements ClientUII, WindowListener {
                 saveConfig();
             }
         });
-        
 
-        
+
         stateText = new JLabel("");
         mainPanel.add(stateText, "align right ,wrap");
-        
+
 
         JPanel p5 = new JPanel();
         p5.setLayout(new MigLayout("insets 5 0 0 0 "));
@@ -455,7 +387,7 @@ public class ClientUI implements ClientUII, WindowListener {
         downloadSpeedField = new JLabel();
         downloadSpeedField.setHorizontalAlignment(JLabel.RIGHT);
         p5.add(downloadSpeedField, "width 130:: ,align right ");
-        
+
         updateUISpeed(0, 0, 0);
         setMessage(" ");
 
@@ -476,75 +408,75 @@ public class ClientUI implements ClientUII, WindowListener {
         mainFrame.setLocationRelativeTo(null);
 
         PopupMenu trayMenu = new PopupMenu();
-        if(SystemTray.isSupported()){
-             mainFrame.addWindowListener(this);
-        	 tray = SystemTray.getSystemTray();
-             trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(offlineImg), name, trayMenu);
-             trayIcon.setImageAutoSize(true);
-             ActionListener listener = new ActionListener() {
-                 public void actionPerformed(ActionEvent e) {
-                     mainFrame.toFront();
-                     setVisible(true);
-                     mainFrame.setVisible(true);
-                 }
-             };
-             trayIcon.addActionListener(listener);
-             trayIcon.addMouseListener(new MouseListener() {
+        if (SystemTray.isSupported()) {
+            mainFrame.addWindowListener(this);
+            tray = SystemTray.getSystemTray();
+            trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(offlineImg), name, trayMenu);
+            trayIcon.setImageAutoSize(true);
+            ActionListener listener = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    mainFrame.toFront();
+                    setVisible(true);
+                    mainFrame.setVisible(true);
+                }
+            };
+            trayIcon.addActionListener(listener);
+            trayIcon.addMouseListener(new MouseListener() {
 
-                 public void mouseClicked(MouseEvent arg0) {
-                 }
+                public void mouseClicked(MouseEvent arg0) {
+                }
 
-                 public void mouseEntered(MouseEvent arg0) {
-                 }
+                public void mouseEntered(MouseEvent arg0) {
+                }
 
-                 public void mouseExited(MouseEvent arg0) {
-                 }
+                public void mouseExited(MouseEvent arg0) {
+                }
 
-                 public void mousePressed(MouseEvent arg0) {
-                 }
+                public void mousePressed(MouseEvent arg0) {
+                }
 
-                 public void mouseReleased(MouseEvent arg0) {
-                 }
+                public void mouseReleased(MouseEvent arg0) {
+                }
 
-             });
+            });
 
-             try {
-                 tray.add(trayIcon);
-             } catch (AWTException e1) {
-                 e1.printStackTrace();
-             }
-             MenuItem item3;
-             try {
-                 item3 = new MenuItem("Exit");
-                 //item3 = new MenuItem("Exit");
-                 ActionListener al = new ActionListener() {
-                     public void actionPerformed(ActionEvent e) {
-                         exit();
-                     }
-                 };
-                 item3.addActionListener(al);
-                 trayMenu.add(item3);
+            try {
+                tray.add(trayIcon);
+            } catch (AWTException e1) {
+                e1.printStackTrace();
+            }
+            MenuItem item3;
+            try {
+                item3 = new MenuItem("Exit");
+                //item3 = new MenuItem("Exit");
+                ActionListener al = new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        exit();
+                    }
+                };
+                item3.addActionListener(al);
+                trayMenu.add(item3);
 
-             } catch (Exception e1) {
-                 e1.printStackTrace();
-             }
-        }else{
-        	mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        } else {
+            mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         }
 
-        boolean tcpEnvSuccess=true;
+        boolean tcpEnvSuccess = true;
         checkFireWallOn();
         if (!success_firewall_windows) {
-        	tcpEnvSuccess=false;
+            tcpEnvSuccess = false;
             if (isVisible) {
                 mainFrame.setVisible(true);
                 JOptionPane.showMessageDialog(mainFrame, "启动windows防火墙失败,请先运行防火墙服务.");
             }
             MLog.println("启动windows防火墙失败,请先运行防火墙服务.");
-           // System.exit(0);
+            // System.exit(0);
         }
         if (!success_firewall_osx) {
-        	tcpEnvSuccess=false;
+            tcpEnvSuccess = false;
             if (isVisible) {
                 mainFrame.setVisible(true);
                 JOptionPane.showMessageDialog(mainFrame, "启动ipfw/pfctl防火墙失败,请先安装.");
@@ -572,7 +504,7 @@ public class ClientUI implements ClientUII, WindowListener {
         }
         //JOptionPane.showMessageDialog(mainFrame,System.getProperty("os.name"));
         if (!b1) {
-        	tcpEnvSuccess=false;
+            tcpEnvSuccess = false;
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
 
@@ -593,7 +525,7 @@ public class ClientUI implements ClientUII, WindowListener {
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-                            tcpEnable=false;
+                            tcpEnable = false;
                             //System.exit(0);
                         }
                     }
@@ -608,7 +540,7 @@ public class ClientUI implements ClientUII, WindowListener {
 
 
         try {
-            mapClient = new MapClient(this,tcpEnvSuccess);
+            mapClient = new MapClient(this, tcpEnvSuccess);
         } catch (final Exception e1) {
             e1.printStackTrace();
             capException = e1;
@@ -646,7 +578,7 @@ public class ClientUI implements ClientUII, WindowListener {
                 null);
 
         setSpeed(config.getDownloadSpeed(), config.getUploadSpeed());
-        if (isVisible&!min) {
+        if (isVisible & !min) {
             mainFrame.setVisible(true);
         }
 
@@ -656,18 +588,103 @@ public class ClientUI implements ClientUII, WindowListener {
             SpeedSetFrame sf = new SpeedSetFrame(ui, mainFrame);
         }
 
-        
+
     }
-    
-    String getServerAddressFromConfig(){
-    	 String server_addressTxt = config.getServerAddress();
-         if (config.getServerAddress() != null && !config.getServerAddress().equals("")) {
-             if (config.getServerPort() != 150
-                     && config.getServerPort() != 0) {
-                 server_addressTxt += (":" + config.getServerPort());
-             }
-         }
-         return server_addressTxt;
+
+    public static String readFileUtf8(String path) throws Exception {
+        String str = null;
+        FileInputStream fis = null;
+        DataInputStream dis = null;
+        try {
+            File file = new File(path);
+
+            int length = (int) file.length();
+            byte[] data = new byte[length];
+
+            fis = new FileInputStream(file);
+            dis = new DataInputStream(fis);
+            dis.readFully(data);
+            str = new String(data, StandardCharsets.UTF_8);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (dis != null) {
+                try {
+                    dis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return str;
+    }
+
+    public static void setAutoRun(boolean run) {
+        String s = new File(".").getAbsolutePath();
+        String currentPaht = s.substring(0, s.length() - 1);
+        StringBuffer sb = new StringBuffer();
+        StringTokenizer st = new StringTokenizer(currentPaht, "\\");
+        while (st.hasMoreTokens()) {
+            sb.append(st.nextToken());
+            sb.append("\\\\");
+        }
+        ArrayList<String> list = new ArrayList<String>();
+        list.add("Windows Registry Editor Version 5.00");
+        String name = "fsclient";
+//		if(PMClientUI.mc){
+//			name="wlg_mc";
+//		}
+        if (run) {
+            list.add("[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run]");
+            list.add("\"" + name + "\"=\"" + sb.toString() + "finalspeedclient.exe -min" + "\"");
+        } else {
+            list.add("[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run]");
+            list.add("\"" + name + "\"=-");
+        }
+
+        File file = null;
+        try {
+            file = new File("import.reg");
+            FileWriter fw = new FileWriter(file);
+            PrintWriter pw = new PrintWriter(fw);
+            for (int i = 0; i < list.size(); i++) {
+                String ss = list.get(i);
+                if (!ss.equals("")) {
+                    pw.println(ss);
+                }
+            }
+            pw.flush();
+            pw.close();
+            Process p = Runtime.getRuntime().exec("regedit /s " + "import.reg");
+            p.waitFor();
+        } catch (Exception e1) {
+            // e1.printStackTrace();
+        } finally {
+            if (file != null) {
+                file.delete();
+            }
+        }
+    }
+
+    String getServerAddressFromConfig() {
+        String server_addressTxt = config.getServerAddress();
+        if (config.getServerAddress() != null && !config.getServerAddress().equals("")) {
+            if (config.getServerPort() != 150
+                    && config.getServerPort() != 0) {
+                server_addressTxt += (":" + config.getServerPort());
+            }
+        }
+        return server_addressTxt;
     }
 
     void checkFireWallOn() {
@@ -684,7 +701,7 @@ public class ClientUI implements ClientUII, WindowListener {
                 final Process p = Runtime.getRuntime().exec(runFirewall, null);
                 osx_fw_pf = true;
             } catch (IOException e) {
-               // e.printStackTrace();
+                // e.printStackTrace();
             }
             success_firewall_osx = osx_fw_ipfw | osx_fw_pf;
         } else if (systemName.contains("linux")) {
@@ -816,7 +833,6 @@ public class ClientUI implements ClientUII, WindowListener {
         saveConfig();
     }
 
-
     void exit() {
         mainFrame.setVisible(false);
         System.exit(0);
@@ -868,12 +884,12 @@ public class ClientUI implements ClientUII, WindowListener {
                 cfg.setAutoStart(json.getBooleanValue("auto_start"));
             }
             if (json.containsKey("recent_address_list")) {
-            	JSONArray list=json.getJSONArray("recent_address_list");
-            	for (int i = 0; i < list.size(); i++) {
-            		cfg.getRecentAddressList().add(list.get(i).toString());
-				}
+                JSONArray list = json.getJSONArray("recent_address_list");
+                for (int i = 0; i < list.size(); i++) {
+                    cfg.getRecentAddressList().add(list.get(i).toString());
+                }
             }
-           
+
             config = cfg;
         } catch (Exception e) {
             e.printStackTrace();
@@ -887,12 +903,12 @@ public class ClientUI implements ClientUII, WindowListener {
                 boolean success = false;
                 try {
                     int serverPort = 150;
-                    String addressTxt ="";
-                    if(text_serverAddress.getSelectedItem()!=null){
-                    	addressTxt =text_serverAddress.getSelectedItem().toString();
+                    String addressTxt = "";
+                    if (text_serverAddress.getSelectedItem() != null) {
+                        addressTxt = text_serverAddress.getSelectedItem().toString();
                     }
                     addressTxt = addressTxt.trim().replaceAll(" ", "");
-                   
+
                     String serverAddress = addressTxt;
                     if (addressTxt.startsWith("[")) {
                         int index = addressTxt.lastIndexOf("]:");
@@ -924,28 +940,28 @@ public class ClientUI implements ClientUII, WindowListener {
                     json.put("protocal", protocal);
                     json.put("auto_start", config.isAutoStart());
 
-                    
-                    if(text_serverAddress.getModel().getSize()>0){
-                    	text_serverAddress.removeItem(addressTxt);
+
+                    if (text_serverAddress.getModel().getSize() > 0) {
+                        text_serverAddress.removeItem(addressTxt);
                     }
                     text_serverAddress.insertItemAt(addressTxt, 0);
-                    text_serverAddress.setSelectedItem(addressTxt);;
-                    
+                    text_serverAddress.setSelectedItem(addressTxt);
 
-                    JSONArray recentAddressList=new JSONArray();
-                    
-                    
-                    int size=text_serverAddress.getModel().getSize();
-                    for(int n=0;n<size;n++){
-                    	String address=text_serverAddress.getModel().getElementAt(n).toString();
-                    	if(!address.equals("")){
-                    		recentAddressList.add(address);
-                    	}
+
+                    JSONArray recentAddressList = new JSONArray();
+
+
+                    int size = text_serverAddress.getModel().getSize();
+                    for (int n = 0; n < size; n++) {
+                        String address = text_serverAddress.getModel().getElementAt(n).toString();
+                        if (!address.equals("")) {
+                            recentAddressList.add(address);
+                        }
                     }
                     json.put("recent_address_list", recentAddressList);
-                    
-                    
-                    saveFile(json.toJSONString().getBytes("utf-8"), configFilePath);
+
+
+                    saveFile(json.toJSONString().getBytes(StandardCharsets.UTF_8), configFilePath);
                     config.setServerAddress(serverAddress);
                     config.setServerPort(serverPort);
                     config.setProtocal(protocal);
@@ -987,44 +1003,6 @@ public class ClientUI implements ClientUII, WindowListener {
         }
     }
 
-    public static String readFileUtf8(String path) throws Exception {
-        String str = null;
-        FileInputStream fis = null;
-        DataInputStream dis = null;
-        try {
-            File file = new File(path);
-
-            int length = (int) file.length();
-            byte[] data = new byte[length];
-
-            fis = new FileInputStream(file);
-            dis = new DataInputStream(fis);
-            dis.readFully(data);
-            str = new String(data, "utf-8");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (dis != null) {
-                try {
-                    dis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return str;
-    }
-
     void saveFile(byte[] data, String path) throws Exception {
         FileOutputStream fos = null;
         try {
@@ -1058,12 +1036,12 @@ public class ClientUI implements ClientUII, WindowListener {
         button.setFocusPainted(false);
         return button;
     }
-    
-    JButton createButton_Link(String name,final String url) {
+
+    JButton createButton_Link(String name, final String url) {
         JButton button = new JButton(name);
-        Color c = new Color(0,0,255);
-        button.setBackground(c);  
-        button.setForeground(new Color(100,100,255));
+        Color c = new Color(0, 0, 255);
+        button.setBackground(c);
+        button.setForeground(new Color(100, 100, 255));
         button.setBorderPainted(false);
         button.setOpaque(false);
         button.setMargin(new Insets(0, 2, 0, 2));
@@ -1122,53 +1100,6 @@ public class ClientUI implements ClientUII, WindowListener {
 
         });
     }
-    
-	public static void setAutoRun(boolean run) {
-		String s = new File(".").getAbsolutePath();
-		String currentPaht = s.substring(0, s.length() - 1);
-		StringBuffer sb = new StringBuffer();
-		StringTokenizer st = new StringTokenizer(currentPaht, "\\");
-		while (st.hasMoreTokens()) {
-			sb.append(st.nextToken());
-			sb.append("\\\\");
-		}
-		ArrayList<String> list = new ArrayList<String>();
-		list.add("Windows Registry Editor Version 5.00");
-		String name="fsclient";
-//		if(PMClientUI.mc){
-//			name="wlg_mc";
-//		}
-		if (run) {
-			list.add("[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run]");
-			list.add("\""+name+"\"=\"" + sb.toString() + "finalspeedclient.exe -min" + "\"");
-		} else {
-			list.add("[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run]");
-			list.add("\""+name+"\"=-");
-		}
-
-		File file = null;
-		try {
-			file = new File("import.reg");
-			FileWriter fw = new FileWriter(file);
-			PrintWriter pw = new PrintWriter(fw);
-			for (int i = 0; i < list.size(); i++) {
-				String ss = list.get(i);
-				if (!ss.equals("")) {
-					pw.println(ss);
-				}
-			}
-			pw.flush();
-			pw.close();
-			Process p = Runtime.getRuntime().exec("regedit /s " + "import.reg");
-			p.waitFor();
-		} catch (Exception e1) {
-			// e1.printStackTrace();
-		} finally {
-			if (file != null) {
-				file.delete();
-			}
-		}
-	}
 
     @Override
     public void windowOpened(WindowEvent e) {

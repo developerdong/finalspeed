@@ -4,6 +4,6 @@ package net.fs.rudp;
 
 public interface ClientProcessorInterface {
 
-	public void onMapClientClose();
-	
+    void onMapClientClose();
+
 }

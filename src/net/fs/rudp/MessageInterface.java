@@ -5,8 +5,10 @@ package net.fs.rudp;
 import java.net.DatagramPacket;
 
 public interface MessageInterface {
-	public int getVer();
-	public int getSType();
-	public DatagramPacket getDatagramPacket();
+    int getVer();
+
+    int getSType();
+
+    DatagramPacket getDatagramPacket();
 }
   
