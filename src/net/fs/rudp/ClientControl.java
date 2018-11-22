@@ -251,34 +251,20 @@ public class ClientControl {
 			long needTime=(long) (1000*1000*1000f*sended/currentSpeed);
 			long usedTime=System.nanoTime()-markTime;
 			if(usedTime<needTime){
-				long sleepTime=needTime-usedTime;
-				needSleep_All+=sleepTime;
-				
-				long moreTime=trueSleep_All-needSleep_All;
+				needSleep_All+=needTime-usedTime;
+				long moreTime=needSleep_All-trueSleep_All;
 				if(moreTime>0){
-					if(sleepTime<=moreTime){
-						sleepTime=0;
-						trueSleep_All-=sleepTime;
-					}
-				}
-				
-				long s=needTime/(1000*1000);
-				int  n=(int) (needTime%(1000*1000));
-				long t1=System.nanoTime();
-				if(sleepTime>0){
+					long t1=System.nanoTime();
 					try {
-						Thread.sleep(s, n);
+						Thread.sleep(moreTime/(1000*1000), (int) (moreTime%(1000*1000)));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 					trueSleep_All+=(System.nanoTime()-t1);
-					//#MLog.println("sssssssssss "+(trueSleep_All-needSleep_All)/(1000*1000));
 				}
-				////#MLog.println("sleepb "+sleepTime+" l "+sended+" s "+s+" n "+n+" tt "+(moreTime));
 			}
 			sended=0;
 		}
-		
 	}
 
 	public Object getSynlock() {
