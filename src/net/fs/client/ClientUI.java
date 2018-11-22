@@ -11,6 +11,7 @@ import net.fs.utils.Tools;
 import net.miginfocom.swing.MigLayout;
 import org.pcap4j.core.Pcaps;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -37,8 +38,8 @@ public class ClientUI implements ClientUII, WindowListener {
     JLabel uploadSpeedField, downloadSpeedField, stateText;
     ClientConfig config = null;
     String configFilePath = new File(URLDecoder.decode(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath(), "UTF-8")).getParent() + System.getProperty("file.separator") + "client_config.json";
-    String logoImg = "img/offline.png";
-    String offlineImg = "img/offline.png";
+    Image logoImg = getImageByPathInJar("offline.png");
+    Image offlineImg = getImageByPathInJar("offline.png");
     String name = "FinalSpeed";
     String domain = "";
     String homeUrl;
@@ -81,7 +82,7 @@ public class ClientUI implements ClientUII, WindowListener {
         MLog.info("System: " + systemName + " " + System.getProperty("os.version"));
         ui = this;
         mainFrame = new JFrame();
-        mainFrame.setIconImage(Toolkit.getDefaultToolkit().getImage(logoImg));
+        mainFrame.setIconImage(logoImg);
         initUI();
         checkQuanxian();
         loadConfig();
@@ -411,7 +412,7 @@ public class ClientUI implements ClientUII, WindowListener {
         if (SystemTray.isSupported()) {
             mainFrame.addWindowListener(this);
             tray = SystemTray.getSystemTray();
-            trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(offlineImg), name, trayMenu);
+            trayIcon = new TrayIcon(offlineImg, name, trayMenu);
             trayIcon.setImageAutoSize(true);
             ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -1161,5 +1162,15 @@ public class ClientUI implements ClientUII, WindowListener {
 
     public void setVisible(boolean visible) {
         this.isVisible = visible;
+    }
+
+    private Image getImageByPathInJar(String resource) {
+        Image image = null;
+        InputStream is = this.getClass().getClassLoader().getResourceAsStream(resource);
+        try {
+            image = ImageIO.read(is);
+        } catch (IOException ignored) {
+        }
+        return image;
     }
 }
