@@ -422,15 +422,15 @@ public class CapEnv {
     private void detectMac_tcp() {
         InetAddress address = null;
         try {
-            address = InetAddress.getByName("bing.com");
+            address = InetAddress.getByName("baidu.com");
         } catch (UnknownHostException e2) {
             e2.printStackTrace();
             try {
-                address = InetAddress.getByName("163.com");
+                address = InetAddress.getByName("taobao.com");
             } catch (UnknownHostException e) {
                 e.printStackTrace();
                 try {
-                    address = InetAddress.getByName("apple.com");
+                    address = InetAddress.getByName("qq.com");
                 } catch (UnknownHostException e1) {
                     e1.printStackTrace();
                 }
