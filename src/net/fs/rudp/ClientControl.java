@@ -173,13 +173,6 @@ public class ClientControl {
         }
     }
 
-    public void onReceivePing(PingMessage pm) {
-        if (route.mode == 2) {
-            currentSpeed = pm.getDownloadSpeed() * 1024;
-            //#MLog.println("更新对方速度: "+currentSpeed);
-        }
-    }
-
     SendRecord getSendRecord(int timeId) {
         SendRecord record = null;
         synchronized (syn_timeid) {

@@ -735,14 +735,10 @@ public class ClientUI implements ClientUIInterface, WindowListener {
     void setSpeed(int downloadSpeed, int uploadSpeed) {
         config.setDownloadSpeed(downloadSpeed);
         config.setUploadSpeed(uploadSpeed);
-        int s1 = (int) ((float) downloadSpeed * 1.1f);
-        text_ds.setText(" " + Tools.getSizeStringKB(s1) + "/s ");
-        int s2 = (int) ((float) uploadSpeed * 1.1f);
-        text_us.setText(" " + Tools.getSizeStringKB(s2) + "/s ");
+        text_ds.setText(" " + Tools.getSizeStringKB(downloadSpeed) + "/s ");
+        text_us.setText(" " + Tools.getSizeStringKB(uploadSpeed) + "/s ");
         Route.localDownloadSpeed = downloadSpeed;
-        Route.localUploadSpeed = config.uploadSpeed;
-
-        saveConfig();
+        Route.localUploadSpeed = uploadSpeed;
     }
 
     void exit() {

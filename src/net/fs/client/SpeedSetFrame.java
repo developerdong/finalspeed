@@ -58,9 +58,10 @@ public class SpeedSetFrame extends JDialog {
                 String us = text_ds.getText().trim();
                 String ds = text_us.getText().trim();
                 try {
-                    int d = (int) (Float.parseFloat(us) * 1024 * 1024 / 8 / 1.1);
-                    int u = (int) (Float.parseFloat(ds) * 1024 * 1024 / 8 / 1.1);
+                    int d = (int) (Float.parseFloat(us) * 1024 * 1024 / 8);
+                    int u = (int) (Float.parseFloat(ds) * 1024 * 1024 / 8);
                     ui.setSpeed(d, u);
+                    ui.saveConfig();
                     setVisible(false);
                 } catch (Exception e2) {
                     //e2.printStackTrace();
