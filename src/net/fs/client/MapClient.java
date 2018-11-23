@@ -20,7 +20,7 @@ public class MapClient implements Trafficlistener {
     ConnectionProcessor imTunnelProcessor;
     Route route_udp, route_tcp;
     short routePort = 45;
-    ClientUII ui;
+    ClientUIInterface ui;
     String serverAddress = "";
     InetAddress address = null;
     int serverPort = 130;
@@ -29,7 +29,6 @@ public class MapClient implements Trafficlistener {
     int downloadSum = 0;
     int uploadSum = 0;
     Thread clientUISpeedUpdateThread;
-    int connNum = 0;
     HashSet<ClientProcessorInterface> processTable = new HashSet<ClientProcessorInterface>();
     Object syn_process = new Object();
     PortMapManager portMapManager;
@@ -43,7 +42,7 @@ public class MapClient implements Trafficlistener {
 
     boolean tcpEnable;
 
-    MapClient(ClientUII ui, boolean tcpEnvSuccess) throws Exception {
+    MapClient(ClientUIInterface ui, boolean tcpEnvSuccess) throws Exception {
         this.ui = ui;
         mapClient = this;
         try {
@@ -159,7 +158,7 @@ public class MapClient implements Trafficlistener {
 
     private void updateUISpeed() {
         if (ui != null) {
-            ui.updateUISpeed(connNum, netStatus.getDownSpeed(), netStatus.getUpSpeed());
+            ui.updateUISpeed(netStatus.getDownSpeed(), netStatus.getUpSpeed());
         }
     }
 
@@ -432,11 +431,11 @@ public class MapClient implements Trafficlistener {
         this.useTcp = useTcp;
     }
 
-    public ClientUII getUi() {
+    public ClientUIInterface getUi() {
         return ui;
     }
 
-    public void setUi(ClientUII ui) {
+    public void setUi(ClientUIInterface ui) {
         this.ui = ui;
     }
 

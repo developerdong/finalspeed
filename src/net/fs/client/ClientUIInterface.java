@@ -2,12 +2,12 @@
 
 package net.fs.client;
 
-public interface ClientUII {
+public interface ClientUIInterface {
 
 
     void setMessage(String message);
 
-    void updateUISpeed(int connNum, int downSpeed, int upSpeed);
+    void updateUISpeed(int downSpeed, int upSpeed);
 
     boolean login();
 

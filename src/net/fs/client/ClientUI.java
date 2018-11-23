@@ -21,10 +21,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
 
-public class ClientUI implements ClientUII, WindowListener {
+public class ClientUI implements ClientUIInterface, WindowListener {
 
     public static ClientUI ui;
     public MapRuleListTable tcpMapRuleListTable;
@@ -41,12 +39,9 @@ public class ClientUI implements ClientUII, WindowListener {
     Image logoImg = getImageByPathInJar("offline.png");
     Image offlineImg = getImageByPathInJar("offline.png");
     String name = "FinalSpeed";
-    String domain = "";
-    String homeUrl;
     JTextField text_ds, text_us;
     boolean ky = true;
     String errorMsg = "保存失败请检查输入信息!";
-    JButton button_site;
     MapRuleListModel model;
     boolean capSuccess = false;
     Exception capException = null;
@@ -62,10 +57,6 @@ public class ClientUI implements ClientUII, WindowListener {
     private TrayIcon trayIcon;
     private SystemTray tray;
 
-    {
-        domain = "ip4a.com";
-        homeUrl = "http://www.ip4a.com/?client_fs";
-    }
 
     ClientUI(final boolean isVisible, boolean min) throws UnsupportedEncodingException {
         this.min = min;
@@ -305,92 +296,58 @@ public class ClientUI implements ClientUII, WindowListener {
         sp2.setLayout(new MigLayout("insets 0 0 0 0"));
         loginPanel.add(sp2, "align center,  wrap");
 
-        final JCheckBox cb = new JCheckBox("开机启动", config.isAutoStart());
-        sp2.add(cb, "align center");
-        cb.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                config.setAutoStart(cb.isSelected());
-                saveConfig();
-                setAutoRun(config.isAutoStart());
-            }
-
-        });
-
-        JButton button_show_log = createButton("显示日志");
-        sp2.add(button_show_log, "wrap");
-        button_show_log.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (logFrame == null) {
-                    logFrame = new LogFrame(ui);
-                    logFrame.setSize(700, 400);
-                    logFrame.setLocationRelativeTo(null);
-                    los.addListener(logFrame);
-
-                    if (los.getBuffer() != null) {
-                        logFrame.showText(los.getBuffer().toString());
-                        los.setBuffer(null);
-                    }
-                }
-                logFrame.setVisible(true);
-            }
-        });
 
         JPanel p4 = new JPanel();
         p4.setLayout(new MigLayout("insets 5 0 0 0 "));
         loginPanel.add(p4, "align center,wrap");
         JButton button_save = createButton("确定");
         p4.add(button_save);
-
-        button_site = createButton("网站");
-        p4.add(button_site);
-        button_site.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openUrl(homeUrl);
+        button_save.addActionListener(e -> {
+            if (config.getDownloadSpeed() == 0 || config.getUploadSpeed() == 0) {
+                SpeedSetFrame sf = new SpeedSetFrame(ui, mainFrame);
             }
+            setMessage("");
+            saveConfig();
+        });
+
+        JButton button_show_log = createButton("日志");
+        p4.add(button_show_log);
+        button_show_log.addActionListener(e -> {
+            if (logFrame == null) {
+                logFrame = new LogFrame(ui);
+                logFrame.setSize(700, 400);
+                logFrame.setLocationRelativeTo(null);
+                los.addListener(logFrame);
+
+                if (los.getBuffer() != null) {
+                    logFrame.showText(los.getBuffer().toString());
+                    los.setBuffer(null);
+                }
+            }
+            logFrame.setVisible(true);
         });
 
         JButton button_exit = createButton("退出");
         p4.add(button_exit);
-        button_exit.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-        button_save.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (config.getDownloadSpeed() == 0 || config.getUploadSpeed() == 0) {
-                    SpeedSetFrame sf = new SpeedSetFrame(ui, mainFrame);
-                }
-                setMessage("");
-                saveConfig();
-            }
-        });
+        button_exit.addActionListener(e -> System.exit(0));
 
 
-        stateText = new JLabel("");
-        mainPanel.add(stateText, "align right ,wrap");
-
-
+        // 底部状态栏
         JPanel p5 = new JPanel();
-        p5.setLayout(new MigLayout("insets 5 0 0 0 "));
-        mainPanel.add(p5, "align right");
-
+        p5.setLayout(new MigLayout("insets 0 0 0 0", "[][100::]50[][100::]50[][100::]"));
+        mainPanel.add(p5);
+        p5.add(new JLabel("状态："));
+        stateText = new JLabel();
+        p5.add(stateText);
+        p5.add(new JLabel("上传："));
+        uploadSpeedField = new JLabel();
+        p5.add(uploadSpeedField);
+        p5.add(new JLabel("下载："));
         downloadSpeedField = new JLabel();
-        downloadSpeedField.setHorizontalAlignment(JLabel.RIGHT);
-        p5.add(downloadSpeedField, "width 130:: ,align right ");
+        p5.add(downloadSpeedField);
+        setMessage("无");
+        updateUISpeed(0, 0);
 
-        updateUISpeed(0, 0, 0);
-        setMessage(" ");
 
         text_serverAddress.setSelectedItem(getServerAddressFromConfig());
 
@@ -630,52 +587,6 @@ public class ClientUI implements ClientUII, WindowListener {
         return str;
     }
 
-    public static void setAutoRun(boolean run) {
-        String s = new File(".").getAbsolutePath();
-        String currentPaht = s.substring(0, s.length() - 1);
-        StringBuffer sb = new StringBuffer();
-        StringTokenizer st = new StringTokenizer(currentPaht, "\\");
-        while (st.hasMoreTokens()) {
-            sb.append(st.nextToken());
-            sb.append("\\\\");
-        }
-        ArrayList<String> list = new ArrayList<String>();
-        list.add("Windows Registry Editor Version 5.00");
-        String name = "fsclient";
-//		if(PMClientUI.mc){
-//			name="wlg_mc";
-//		}
-        if (run) {
-            list.add("[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run]");
-            list.add("\"" + name + "\"=\"" + sb.toString() + "finalspeedclient.exe -min" + "\"");
-        } else {
-            list.add("[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run]");
-            list.add("\"" + name + "\"=-");
-        }
-
-        File file = null;
-        try {
-            file = new File("import.reg");
-            FileWriter fw = new FileWriter(file);
-            PrintWriter pw = new PrintWriter(fw);
-            for (int i = 0; i < list.size(); i++) {
-                String ss = list.get(i);
-                if (!ss.equals("")) {
-                    pw.println(ss);
-                }
-            }
-            pw.flush();
-            pw.close();
-            Process p = Runtime.getRuntime().exec("regedit /s " + "import.reg");
-            p.waitFor();
-        } catch (Exception e1) {
-            // e1.printStackTrace();
-        } finally {
-            if (file != null) {
-                file.delete();
-            }
-        }
-    }
 
     String getServerAddressFromConfig() {
         String server_addressTxt = config.getServerAddress();
@@ -850,7 +761,7 @@ public class ClientUI implements ClientUII, WindowListener {
     }
 
     public void setMessage(String message) {
-        stateText.setText("状态: " + message);
+        stateText.setText(message);
     }
 
     ClientConfig loadConfig() {
@@ -1022,12 +933,12 @@ public class ClientUI implements ClientUII, WindowListener {
         }
     }
 
-    public void updateUISpeed(int conn, int downloadSpeed, int uploadSpeed) {
-        String string =
-                " 下载:" + Tools.getSizeStringKB(downloadSpeed) + "/s"
-                        + " 上传:" + Tools.getSizeStringKB(uploadSpeed) + "/s";
+    public void updateUISpeed(int downloadSpeed, int uploadSpeed) {
+        if (uploadSpeedField != null) {
+            uploadSpeedField.setText(Tools.getSizeStringKB(uploadSpeed) + "/s");
+        }
         if (downloadSpeedField != null) {
-            downloadSpeedField.setText(string);
+            downloadSpeedField.setText(Tools.getSizeStringKB(downloadSpeed) + "/s");
         }
     }
 

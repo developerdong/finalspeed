@@ -12,7 +12,7 @@ import java.io.*;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
-public class ClientNoUI implements ClientUII {
+public class ClientNoUI implements ClientUIInterface {
 
     public static ClientNoUI ui;
     public boolean osx_fw_pf = false;
@@ -41,7 +41,7 @@ public class ClientNoUI implements ClientUII {
         checkQuanxian();
         loadConfig();
         model = new MapRuleListModel();
-        updateUISpeed(0, 0, 0);
+        updateUISpeed(0, 0);
         setMessage(" ");
         boolean tcpEnvSuccess = true;
         checkFireWallOn();
@@ -327,7 +327,7 @@ public class ClientNoUI implements ClientUII {
     }
 
     @Override
-    public void updateUISpeed(int connNum, int downSpeed, int upSpeed) {
+    public void updateUISpeed(int downSpeed, int upSpeed) {
 
     }
 
