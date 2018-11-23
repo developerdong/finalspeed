@@ -26,24 +26,25 @@ public class SpeedSetFrame extends JDialog {
         panel.setLayout(new MigLayout("alignx center,aligny center,insets 10 10 10 10"));
 
 
-        panel.add(new JLabel("单位Mb ( 1Mb=128KB,10Mb=1280KB )"), "height ::,wrap");
-        panel.add(new JLabel("请正确输入,该值会直接影响加速效果."), "height ::,wrap");
+        panel.add(new JLabel("单位Mbps(1Mbps=128KB/s, 1MB/s=8Mbps)"), "height ::,wrap");
+        panel.add(new JLabel("请正确输入，该值会直接影响加速效果，建议："), "height ::,wrap");
+        panel.add(new JLabel("1. 使用TRACEROUTE找到本机到服务器的国际出口"), "height ::,wrap");
+        panel.add(new JLabel("2. 测试本机到国际出口间的带宽并设置"), "height ::,wrap");
 
         JPanel p5 = new JPanel();
         panel.add(p5, "wrap");
         p5.setLayout(new MigLayout(""));
-        p5.add(new JLabel("下载带宽:"));
+        p5.add(new JLabel("下载带宽："));
         text_ds = new JTextField("");
         p5.add(text_ds, "width 50::");
-        p5.add(new JLabel("Mb"));
+        p5.add(new JLabel("Mbps"));
 
         p5.add(new JLabel("  "));
 
-        p5.add(new JLabel("上传带宽:"));
+        p5.add(new JLabel("上传带宽："));
         text_us = new JTextField("");
         p5.add(text_us, "width 50::");
-        //text_us.setEditable(false);
-        p5.add(new JLabel("Mb"));
+        p5.add(new JLabel("Mbps"));
 
         JPanel p6 = new JPanel();
         panel.add(p6, "align center,wrap");

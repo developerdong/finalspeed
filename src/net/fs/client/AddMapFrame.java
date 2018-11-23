@@ -38,10 +38,6 @@ public class AddMapFrame extends JDialog {
         panel.setLayout(new MigLayout("alignx center,aligny center,insets 10 10 10 10"));
 
 
-        String text = "<html><head></head><body>"
-                + "单位Mb ( 1Mb=128KB,10Mb=1280KB )<br>"
-                + "" + "请正确输入,该值会直接影响加速效果.</span></br></body></html>";
-
         JPanel p3 = new JPanel();
         panel.add(p3, "wrap");
         p3.setBorder(BorderFactory.createEtchedBorder());
