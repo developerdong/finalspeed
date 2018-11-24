@@ -5,19 +5,14 @@ import net.fs.utils.LogOutputStream;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
-import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class LogFrame extends JFrame implements LogListener {
 
     private static final long serialVersionUID = 8642892909397273483L;
-    final int SCROLL_BUFFER_SIZE = 1000;
     ClientUI ui;
-    JTextArea logArea;
-    JScrollPane scroll;
-    boolean autoScroll = true;
+    private JTextArea logArea;
 
     LogFrame(ClientUI ui) {
         super("日志");
@@ -28,7 +23,7 @@ public class LogFrame extends JFrame implements LogListener {
 
         logArea = new JTextArea();
 
-        scroll = new JScrollPane(logArea);
+        JScrollPane scroll = new JScrollPane(logArea);
 
         panel.add(scroll, "width :10240:,height :10240: ,wrap");
 
@@ -36,66 +31,30 @@ public class LogFrame extends JFrame implements LogListener {
         panel.add(p3, "align center,wrap");
         p3.setLayout(new MigLayout("inset 5 5 5 5"));
 
-        final JCheckBox cb_lock = new JCheckBox("自动滚动", autoScroll);
+        final JCheckBox cb_lock = new JCheckBox("自动滚动", true);
         p3.add(cb_lock, "align center");
-        cb_lock.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                autoScroll = cb_lock.isSelected();
+        cb_lock.addActionListener(e -> {
+            DefaultCaret caret = (DefaultCaret) logArea.getCaret();
+            if (cb_lock.isSelected()) {
+                caret.setDot(logArea.getText().length());
+                caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+            } else {
+                caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
             }
-
         });
 
         JButton button_clear = createButton("清空");
         p3.add(button_clear);
-        button_clear.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                logArea.setText("");
-            }
-        });
-
-    }
-
-    public void trunkTextArea(JTextArea txtWin) {
-        int numLinesToTrunk = txtWin.getLineCount() - SCROLL_BUFFER_SIZE;
-        if (numLinesToTrunk > 0) {
-            try {
-                int posOfLastLineToTrunk = txtWin.getLineEndOffset(numLinesToTrunk - 1);
-                txtWin.replaceRange("", 0, posOfLastLineToTrunk);
-            } catch (BadLocationException ex) {
-                ex.printStackTrace();
-            }
-        }
+        button_clear.addActionListener(e -> logArea.setText(""));
     }
 
     void showText(String text) {
         logArea.append(text);
-        trunkTextArea(logArea);
-        if (autoScroll) {
-            JScrollBar vertical = scroll.getVerticalScrollBar();
-            vertical.setValue(vertical.getMaximum());
-        }
     }
 
     @Override
     public void onAppendContent(LogOutputStream los, final String text) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                logArea.append(text);
-                trunkTextArea(logArea);
-                if (autoScroll) {
-                    logArea.setCaretPosition(logArea.getDocument().getLength());
-//					JScrollBar vertical = scroll.getVerticalScrollBar();
-//					vertical.setValue(vertical.getMaximum() );
-                }
-            }
-        });
-
+        SwingUtilities.invokeLater(() -> showText(text));
     }
 
     JButton createButton(String name) {
