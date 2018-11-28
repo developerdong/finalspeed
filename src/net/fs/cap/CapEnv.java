@@ -35,7 +35,8 @@ public class CapEnv {
     VDatagramSocket vDatagramSocket;
     TunManager tcpManager;
     private boolean fwSuccess;
-    private String testIp_tcp = "";
+    private final String TCP_TEST_IP = "114.114.114.114";
+    private final int TCP_TEST_PORT = 53;
     private String selectedInterfaceName = null;
     private String selectedInterfaceDes = "";
     short listenPort;
@@ -151,6 +152,10 @@ public class CapEnv {
     }
 
     boolean initInterface() throws Exception {
+        while (!isNetworkConnected()) {
+            MLog.info("网络未连通");
+            Thread.sleep(1000);
+        }
         boolean success = false;
         detectInterface();
         List<PcapNetworkInterface> allDevices = Pcaps.findAllDevs();
@@ -262,7 +267,7 @@ public class CapEnv {
                             if (ipV4Packet != null) {
                                 ipV4Header = ipV4Packet.getHeader();
 
-                                if (ipV4Header.getSrcAddr().getHostAddress().equals(testIp_tcp)) {
+                                if (ipV4Header.getSrcAddr().getHostAddress().equals(TCP_TEST_IP)) {
                                     local_mac = head_eth.getDstAddr();
                                     gateway_mac = head_eth.getSrcAddr();
                                     local_ipv4 = ipV4Header.getDstAddr();
@@ -272,7 +277,7 @@ public class CapEnv {
                                     }
                                     //MLog.println("local_mac_tcp1 "+gateway_mac+" gateway_mac "+gateway_mac+" local_ipv4 "+local_ipv4);
                                 }
-                                if (ipV4Header.getDstAddr().getHostAddress().equals(testIp_tcp)) {
+                                if (ipV4Header.getDstAddr().getHostAddress().equals(TCP_TEST_IP)) {
                                     local_mac = head_eth.getSrcAddr();
                                     gateway_mac = head_eth.getDstAddr();
                                     local_ipv4 = ipV4Header.getSrcAddr();
@@ -305,7 +310,6 @@ public class CapEnv {
 
         }
 
-        //detectMac_udp();
         detectMac_tcp();
 
 
@@ -368,13 +372,11 @@ public class CapEnv {
     }
 
     private void detectMac_tcp() {
-        final int port = 53;
-        testIp_tcp = "114.114.114.114";
         for (int i = 0; i < 5; i++) {
             try {
                 Route.es.execute(() -> {
                     try {
-                        Socket socket = new Socket(testIp_tcp, port);
+                        Socket socket = new Socket(TCP_TEST_IP, TCP_TEST_PORT);
                         socket.close();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -402,4 +404,13 @@ public class CapEnv {
         }
     }
 
+    private boolean isNetworkConnected() {
+        try {
+            Socket socket = new Socket(TCP_TEST_IP, TCP_TEST_PORT);
+            socket.close();
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
 }
