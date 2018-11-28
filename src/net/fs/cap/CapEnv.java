@@ -420,27 +420,8 @@ public class CapEnv {
     }
 
     private void detectMac_tcp() {
-        InetAddress address = null;
-        try {
-            address = InetAddress.getByName("baidu.com");
-        } catch (UnknownHostException e2) {
-            e2.printStackTrace();
-            try {
-                address = InetAddress.getByName("taobao.com");
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-                try {
-                    address = InetAddress.getByName("qq.com");
-                } catch (UnknownHostException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        }
-        if (address == null) {
-            MLog.println("域名解析失败,请检查DNS设置!");
-        }
-        final int por = 80;
-        testIp_tcp = address.getHostAddress();
+        final int port = 53;
+        testIp_tcp = "114.114.114.114";
         for (int i = 0; i < 5; i++) {
             try {
                 Route.es.execute(new Runnable() {
@@ -448,7 +429,7 @@ public class CapEnv {
                     @Override
                     public void run() {
                         try {
-                            Socket socket = new Socket(testIp_tcp, por);
+                            Socket socket = new Socket(testIp_tcp, port);
                             socket.close();
                         } catch (UnknownHostException e) {
                             e.printStackTrace();
