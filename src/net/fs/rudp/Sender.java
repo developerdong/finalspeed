@@ -113,7 +113,7 @@ public class Sender {
                         twice = true;
                     }
                 }
-                sendDataMessage(me, false, twice, true);
+                sendDataMessage(me, false, twice);
                 lastSendTime = System.currentTimeMillis();
                 sendOffset++;
                 s += me.getData().length;
@@ -144,7 +144,7 @@ public class Sender {
         }
     }
 
-    void sendDataMessage(DataMessage me, boolean resend, boolean twice, boolean block) {
+    void sendDataMessage(DataMessage me, boolean resend, boolean twice) {
         synchronized (conn.clientControl.getSynlock()) {
             long startTime = System.nanoTime();
             long t1 = System.currentTimeMillis();
@@ -179,7 +179,7 @@ public class Sender {
                 if (twice) {
                     send(me.getDatagramPacket());//发两次
                 }
-                if (block) {
+                if (!resend) {
                     conn.clientControl.sendSleep(startTime, me.getData().length);
                 }
                 TrafficEvent event = new TrafficEvent("", ran.nextLong(), me.getData().length, TrafficEvent.type_uploadTraffic);
@@ -207,7 +207,7 @@ public class Sender {
         if (sendTable.containsKey(sequence)) {
             DataMessage dm = sendTable.get(sequence);
             if (dm != null) {
-                sendDataMessage(dm, true, false, true);
+                sendDataMessage(dm, true, false);
             }
         }
     }
