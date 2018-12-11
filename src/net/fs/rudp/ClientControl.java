@@ -73,7 +73,7 @@ public class ClientControl {
         } else if (sType == net.fs.rudp.message.MessageType.sType_PingMessage2) {
             PingMessage2 pm = new PingMessage2(dp);
             lastReceivePingTime = System.currentTimeMillis();
-            Long t = pingTable.get(pm.getPingId());
+            Long t = pingTable.remove(pm.getPingId());
             if (t != null) {
                 pingDelay = (int) (System.currentTimeMillis() - t);
                 String protocal = "";
