@@ -93,15 +93,6 @@ public class TCPTun {
             try {
                 sendHandle.sendPacket(syncPacket);
                 localSequence = localStartSequence + 1;
-            } catch (PcapNativeException e) {
-                MLog.info("网络恢复...");
-                try {
-                    if (capEnv.initInterface()) {
-                        MLog.info("网络恢复成功");
-                    }
-                } catch (Exception initInterfaceException) {
-                    initInterfaceException.printStackTrace();
-                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

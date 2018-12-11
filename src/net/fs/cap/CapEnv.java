@@ -65,25 +65,8 @@ public class CapEnv {
             long t = System.currentTimeMillis();
             while (true) {
                 if (System.currentTimeMillis() - t > 5 * 1000) {
-                    for (int i = 0; i < 10; i++) {
-                        MLog.info("休眠恢复... " + (i + 1));
-                        try {
-                            boolean success = initInterface();
-                            if (success) {
-                                MLog.info("休眠恢复成功 " + (i + 1));
-                                break;
-                            }
-                        } catch (Exception e1) {
-                            e1.printStackTrace();
-                        }
-
-                        try {
-                            Thread.sleep(5 * 1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
+                    MLog.info("休眠恢复...");
+                    networkRecover();
                 }
                 t = System.currentTimeMillis();
                 try {
@@ -367,7 +350,8 @@ public class CapEnv {
         } else {
             tcpManager.removeTun(conn);
             tcpManager.setDefaultTcpTun(null);
-            throw new Exception("创建隧道失败!");
+            MLog.info("创建隧道失败!");
+            networkRecover();
         }
     }
 
@@ -411,6 +395,17 @@ public class CapEnv {
             return true;
         } catch (IOException e) {
             return false;
+        }
+    }
+
+    private void networkRecover() {
+        MLog.info("网络恢复...重新绑定网卡");
+        try {
+            if (initInterface()) {
+                MLog.info("网络恢复成功");
+            }
+        } catch (Exception initInterfaceException) {
+            initInterfaceException.printStackTrace();
         }
     }
 }
