@@ -47,8 +47,8 @@ public class MapRuleRender extends JLabel implements TableCellRenderer {
         } else if (name.trim().equals("")) {
             name = "无";
         }
-        label_wan_address.setText("名称: " + rule.name + "  加速端口: " + rule.dst_port);
-        label2.setText("本地端口: " + rule.getListen_port());
+        label_wan_address.setText("名称: " + rule.getName() + "  本地端口: " + rule.getListenPort());
+        label2.setText("加速地址: " + rule.getDstAddress() + "  加速端口: " + rule.getDstPort());
 
     }
 

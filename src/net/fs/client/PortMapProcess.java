@@ -45,8 +45,8 @@ public class PortMapProcess implements ClientProcessorInterface {
             tos = conn.uos;
 
             JSONObject requestJson = new JSONObject();
-            requestJson.put("dst_address", dstAddress);
-            requestJson.put("dst_port", dstPort);
+            requestJson.put(MapRule.DST_ADDRESS_KEY, dstAddress);
+            requestJson.put(MapRule.DST_PORT_KEY, dstPort);
             byte[] requestData = requestJson.toJSONString().getBytes(StandardCharsets.UTF_8);
 
             tos.write(requestData, 0, requestData.length);

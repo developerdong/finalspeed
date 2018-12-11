@@ -15,7 +15,10 @@ public class AddMapFrame extends JDialog {
 
     ClientUI ui;
 
-    JTextField portTextField, text_port, nameTextField;
+    private final JTextField remoteAddressTextField;
+    private final JTextField remotePortTextField;
+    private final JTextField localPortTextField;
+    private final JTextField nameTextField;
 
     int downloadSpeed, uploadSpeed;
 
@@ -47,14 +50,19 @@ public class AddMapFrame extends JDialog {
         nameTextField = new JTextField();
         p3.add(nameTextField, "width :100: ,wrap");
 
+        p3.add(new JLabel("加速地址:"));
+        remoteAddressTextField = new JTextField("");
+        p3.add(remoteAddressTextField, "width :100:,wrap");
+        remoteAddressTextField.setToolTipText("需要加速的主机地址");
+
         p3.add(new JLabel("加速端口:"));
-        portTextField = new JTextField("");
-        p3.add(portTextField, "width :50:,wrap");
-        portTextField.setToolTipText("需要加速的端口号");
+        remotePortTextField = new JTextField("");
+        p3.add(remotePortTextField, "width :50:,wrap");
+        remotePortTextField.setToolTipText("需要加速的端口号");
 
         p3.add(new JLabel("本地端口:	"));
-        text_port = new JTextField();
-        p3.add(text_port, "width :50: ,wrap");
+        localPortTextField = new JTextField();
+        p3.add(localPortTextField, "width :50: ,wrap");
 
         JPanel p6 = new JPanel();
         panel.add(p6, "align center,wrap");
@@ -68,22 +76,25 @@ public class AddMapFrame extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 try {
                     checkName(nameTextField.getText());
-                    checkPort(text_port.getText());
-                    checkPort(portTextField.getText());
+                    checkPort(localPortTextField.getText());
+                    checkPort(remotePortTextField.getText());
+                    checkDstAddress(remoteAddressTextField.getText());
                     String name = nameTextField.getText();
-                    int listen_port = Integer.parseInt(text_port.getText());
-                    int dst_port = Integer.parseInt(portTextField.getText());
+                    String address = remoteAddressTextField.getText();
+                    int listen_port = Integer.parseInt(localPortTextField.getText());
+                    int dst_port = Integer.parseInt(remotePortTextField.getText());
                     MapRule mapRule_new = new MapRule();
                     mapRule_new.setName(name);
-                    mapRule_new.listen_port = listen_port;
-                    mapRule_new.setDst_port(dst_port);
+                    mapRule_new.setDstAddress(address);
+                    mapRule_new.setListenPort(listen_port);
+                    mapRule_new.setDstPort(dst_port);
                     if (!edit) {
                         ui.mapClient.portMapManager.addMapRule(mapRule_new);
                     } else {
                         ui.mapClient.portMapManager.updateMapRule(maprule_origin, mapRule_new);
                     }
                     ui.loadMapRule();
-                    ui.select(mapRule_new.name);
+                    ui.select(mapRule_new.getName());
                     setVisible(false);
                 } catch (Exception e1) {
                     //e2.printStackTrace();
@@ -106,9 +117,10 @@ public class AddMapFrame extends JDialog {
 
 
         if (edit) {
-            nameTextField.setText(maprule_origin.name);
-            text_port.setText(maprule_origin.listen_port + "");
-            portTextField.setText(maprule_origin.dst_port + "");
+            nameTextField.setText(maprule_origin.getName());
+            remoteAddressTextField.setText(maprule_origin.getDstAddress());
+            localPortTextField.setText(maprule_origin.getListenPort() + "");
+            remotePortTextField.setText(maprule_origin.getDstPort() + "");
         }
 
         pack();

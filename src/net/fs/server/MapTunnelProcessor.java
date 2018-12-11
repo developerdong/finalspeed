@@ -3,6 +3,7 @@
 package net.fs.server;
 
 import com.alibaba.fastjson.JSONObject;
+import net.fs.client.MapRule;
 import net.fs.client.Pipe;
 import net.fs.rudp.*;
 import net.fs.utils.MLog;
@@ -54,7 +55,8 @@ public class MapTunnelProcessor implements ConnectionProcessor {
             headData = tis.read2();
             String hs = new String(headData, StandardCharsets.UTF_8);
             JSONObject requestJSon = JSONObject.parseObject(hs);
-            final int dstPort = requestJSon.getIntValue("dst_port");
+            final int dstPort = requestJSon.getIntValue(MapRule.DST_PORT_KEY);
+            final String dstAddress = requestJSon.getString(MapRule.DST_ADDRESS_KEY);
             String message = "";
             JSONObject responeJSon = new JSONObject();
             int code = Constant.code_failed;
@@ -67,7 +69,7 @@ public class MapTunnelProcessor implements ConnectionProcessor {
                 close();
                 return;
             }
-            dstSocket = new Socket("127.0.0.1", dstPort);
+            dstSocket = new Socket(dstAddress, dstPort);
             dstSocket.setTcpNoDelay(true);
             sis = dstSocket.getInputStream();
             sos = dstSocket.getOutputStream();

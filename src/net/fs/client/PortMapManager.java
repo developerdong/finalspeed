@@ -69,23 +69,19 @@ public class PortMapManager {
     }
 
     void addMapRule(MapRule mapRule) throws Exception {
-        if (getMapRule(mapRule.name) != null) {
-            throw new Exception("映射 " + mapRule.name + " 已存在,请修改名称!");
+        if (getMapRule(mapRule.getName()) != null) {
+            throw new Exception("映射 " + mapRule.getName() + " 已存在,请修改名称!");
         }
-        ServerSocket serverSocket = null;
+        ServerSocket serverSocket;
         try {
-            serverSocket = new ServerSocket(mapRule.getListen_port());
+            serverSocket = new ServerSocket(mapRule.getListenPort());
             listen(serverSocket);
             mapList.add(mapRule);
-            mapRuleTable.put(mapRule.listen_port, mapRule);
+            mapRuleTable.put(mapRule.getListenPort(), mapRule);
             saveMapRule();
         } catch (IOException e2) {
             //e2.printStackTrace();
-            throw new Exception("端口 " + mapRule.getListen_port() + " 已经被占用!");
-        } finally {
-//			if(serverSocket!=null){
-//				serverSocket.close();
-//			}
+            throw new Exception("端口 " + mapRule.getListenPort() + " 已经被占用!");
         }
     }
 
@@ -93,10 +89,10 @@ public class PortMapManager {
         MapRule mapRule = getMapRule(name);
         if (mapRule != null) {
             mapList.remove(mapRule);
-            mapRuleTable.remove(mapRule.listen_port);
-            if (mapRule.serverSocket != null) {
+            mapRuleTable.remove(mapRule.getListenPort());
+            if (mapRule.getServerSocket() != null) {
                 try {
-                    mapRule.serverSocket.close();
+                    mapRule.getServerSocket().close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -110,33 +106,29 @@ public class PortMapManager {
     }
 
     void updateMapRule(MapRule mapRule_origin, MapRule mapRule_new) throws Exception {
-        if (getMapRule(mapRule_new.name) != null && !mapRule_origin.name.equals(mapRule_new.name)) {
-            throw new Exception("映射 " + mapRule_new.name + " 已存在,请修改名称!");
+        if (getMapRule(mapRule_new.getName()) != null && !mapRule_origin.getName().equals(mapRule_new.getName())) {
+            throw new Exception("映射 " + mapRule_new.getName() + " 已存在,请修改名称!");
         }
-        ServerSocket serverSocket = null;
-        if (mapRule_origin.listen_port != mapRule_new.listen_port) {
+        ServerSocket serverSocket;
+        if (mapRule_origin.getListenPort() != mapRule_new.getListenPort()) {
             try {
-                serverSocket = new ServerSocket(mapRule_new.getListen_port());
+                serverSocket = new ServerSocket(mapRule_new.getListenPort());
                 listen(serverSocket);
-                mapRule_origin.using = false;
-                if (mapRule_origin.serverSocket != null) {
-                    mapRule_origin.serverSocket.close();
+                if (mapRule_origin.getServerSocket() != null) {
+                    mapRule_origin.getServerSocket().close();
                 }
-                mapRule_origin.serverSocket = serverSocket;
-                mapRuleTable.remove(mapRule_origin.listen_port);
-                mapRuleTable.put(mapRule_new.listen_port, mapRule_new);
+                mapRule_origin.setServerSocket(serverSocket);
+                mapRuleTable.remove(mapRule_origin.getListenPort());
+                mapRuleTable.put(mapRule_new.getListenPort(), mapRule_new);
             } catch (IOException e2) {
                 //e2.printStackTrace();
-                throw new Exception("端口 " + mapRule_new.getListen_port() + " 已经被占用!");
-            } finally {
-//				if(serverSocket!=null){
-//					serverSocket.close();
-//				}
+                throw new Exception("端口 " + mapRule_new.getListenPort() + " 已经被占用!");
             }
         }
-        mapRule_origin.name = mapRule_new.name;
-        mapRule_origin.listen_port = mapRule_new.listen_port;
-        mapRule_origin.dst_port = mapRule_new.dst_port;
+        mapRule_origin.setName(mapRule_new.getName());
+        mapRule_origin.setDstAddress(mapRule_new.getDstAddress());
+        mapRule_origin.setListenPort(mapRule_new.getListenPort());
+        mapRule_origin.setDstPort(mapRule_new.getDstPort());
         saveMapRule();
 
     }
@@ -144,15 +136,13 @@ public class PortMapManager {
     void saveMapRule() throws Exception {
         JSONObject json = new JSONObject();
         JSONArray json_map_list = new JSONArray();
-        json.put("map_list", json_map_list);
-        if (mapList.size() == 0) {
-
-        }
+        json.put(MapRule.MAP_LIST_KEY, json_map_list);
         for (MapRule r : mapList) {
             JSONObject json_rule = new JSONObject();
-            json_rule.put("name", r.name);
-            json_rule.put("listen_port", r.listen_port);
-            json_rule.put("dst_port", r.dst_port);
+            json_rule.put(MapRule.NAME_KEY, r.getName());
+            json_rule.put(MapRule.DST_ADDRESS_KEY, r.getDstAddress());
+            json_rule.put(MapRule.LISTEN_PORT_KEY, r.getListenPort());
+            json_rule.put(MapRule.DST_PORT_KEY, r.getDstPort());
             json_map_list.add(json_rule);
         }
         try {
@@ -174,25 +164,25 @@ public class PortMapManager {
         } catch (Exception e) {
             //e.printStackTrace();
         }
-        if (json != null && json.containsKey("map_list")) {
-            JSONArray json_map_list = json.getJSONArray("map_list");
-            for (int i = 0; i < json_map_list.size(); i++) {
-                JSONObject json_rule = (JSONObject) json_map_list.get(i);
+        if (json != null && json.containsKey(MapRule.MAP_LIST_KEY)) {
+            JSONArray json_map_list = json.getJSONArray(MapRule.MAP_LIST_KEY);
+            for (Object o : json_map_list) {
+                JSONObject json_rule = (JSONObject) o;
                 MapRule mapRule = new MapRule();
-                mapRule.name = json_rule.getString("name");
-                mapRule.listen_port = json_rule.getIntValue("listen_port");
-                mapRule.dst_port = json_rule.getIntValue("dst_port");
+                mapRule.setName(json_rule.getString(MapRule.NAME_KEY));
+                mapRule.setDstAddress(json_rule.getString(MapRule.DST_ADDRESS_KEY));
+                mapRule.setListenPort(json_rule.getIntValue(MapRule.LISTEN_PORT_KEY));
+                mapRule.setDstPort(json_rule.getIntValue(MapRule.DST_PORT_KEY));
                 mapList.add(mapRule);
                 ServerSocket serverSocket;
                 try {
-                    serverSocket = new ServerSocket(mapRule.getListen_port());
+                    serverSocket = new ServerSocket(mapRule.getListenPort());
                     listen(serverSocket);
-                    mapRule.serverSocket = serverSocket;
+                    mapRule.setServerSocket(serverSocket);
                 } catch (IOException e) {
-                    mapRule.using = true;
                     e.printStackTrace();
                 }
-                mapRuleTable.put(mapRule.listen_port, mapRule);
+                mapRuleTable.put(mapRule.getListenPort(), mapRule);
             }
         }
 
@@ -239,7 +229,7 @@ public class PortMapManager {
                                         route = mapClient.route_udp;
                                     }
                                     PortMapProcess process = new PortMapProcess(mapClient, route, socket, mapClient.serverAddress, mapClient.serverPort, null,
-                                            null, mapRule.dst_port);
+                                            mapRule.getDstAddress(), mapRule.getDstPort());
                                 }
                             }
 

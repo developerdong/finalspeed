@@ -7,35 +7,53 @@ import java.net.ServerSocket;
 
 public class MapRule implements Serializable {
 
-    /**
-     *
-     */
+    public static final String DST_PORT_KEY = "dst_port";
+    public static final String DST_ADDRESS_KEY = "dst_address";
+    static final String MAP_LIST_KEY = "map_list";
+    static final String NAME_KEY = "name";
+    static final String LISTEN_PORT_KEY = "listen_port";
+
     private static final long serialVersionUID = -3504577683070928480L;
+    private int listenPort;
 
-    int listen_port;
+    private int dstPort;
 
-    int dst_port;
+    private String dstAddress;
 
-    String name;
+    private ServerSocket serverSocket;
 
-    boolean using = false;
+    private String name;
 
-    ServerSocket serverSocket;
-
-    public int getListen_port() {
-        return listen_port;
+    public int getDstPort() {
+        return dstPort;
     }
 
-    public void setListen_port(int listen_port) {
-        this.listen_port = listen_port;
+    void setDstPort(int dstPort) {
+        this.dstPort = dstPort;
     }
 
-    public int getDst_port() {
-        return dst_port;
+    String getDstAddress() {
+        return dstAddress;
     }
 
-    public void setDst_port(int dst_port) {
-        this.dst_port = dst_port;
+    void setDstAddress(String dstAddress) {
+        this.dstAddress = dstAddress;
+    }
+
+    ServerSocket getServerSocket() {
+        return serverSocket;
+    }
+
+    void setServerSocket(ServerSocket serverSocket) {
+        this.serverSocket = serverSocket;
+    }
+
+    int getListenPort() {
+        return listenPort;
+    }
+
+    void setListenPort(int listenPort) {
+        this.listenPort = listenPort;
     }
 
     public String getName() {
