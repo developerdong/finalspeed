@@ -170,6 +170,12 @@ public class CapEnv {
             MLog.info("Select Network Interface failed,can't use TCP protocol!\n");
         }
         if (tcpEnable) {
+
+            if (sendHandle != null && sendHandle.isOpen()) {
+                sendHandle.breakLoop();
+                sendHandle.close();
+            }
+
             sendHandle = nif.openLive(SNAP_LENGTH, getMode(nif), READ_TIMEOUT);
 
             String filter;
